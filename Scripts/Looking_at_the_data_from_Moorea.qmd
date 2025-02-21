@@ -1,0 +1,17 @@
+---
+title: "Looking_at_the_data_from_Moorea"
+format: html
+editor: visual
+---
+
+# Libraries
+```{r}
+library(tidyverse)
+library(here)
+```
+
+#Load Data
+```{r}
+coral <- read_csv(here('Data','MCR_LTER_Porites_rus_Long_Term_Trends_Abundance_20160426.csv'))
+```
+
