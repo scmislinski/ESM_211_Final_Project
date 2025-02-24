@@ -11,7 +11,28 @@ library(here)
 ```
 
 #Load Data
+Options: Abudefduf septemfasciatus <- dog fish tuna 104 observations
+Acanthurus olivaceus <- orange band surgeon fish 379 obs
+Naso lituratus <- unicornfish 1279 observations
+Acanthurus triostegus <- manini 466
+Carcharhinus melanopterus <- black tip reef shark 51 obs
 ```{r}
-coral <- read_csv(here('Data','MCR_LTER_Porites_rus_Long_Term_Trends_Abundance_20160426.csv'))
+species_list <- read_csv(here('Data','MCR_LTER_Fish_Species_List_20230608.csv'))
+annual_survey <- read_csv(here('Data','MCR_LTER_Annual_Fish_Survey_20230615.csv'))
+
+fishies <- annual_survey |> filter(Taxonomy == "Naso lituratus")
+```
+
+
+
+```{r}
+#just the orange spine unicorn fishies
+ggplot(fishies, aes(x = Year, y = Count)) +
+  geom_line(color = "blue")
+```
+```{r}
+#all fishies count
+ggplot(annual_survey, aes(x = Year, y = Count)) +
+  geom_line(color = "blue")
 ```
 
