@@ -10,6 +10,10 @@ library(tidyverse)
 library(here)
 ```
 
+Citation: 
+Moorea Coral Reef LTER and A. Brooks. 2023. MCR LTER: Coral Reef: Long-term Population and Community Dynamics: Fishes, ongoing since 2005 ver 62. Environmental Data Initiative. https://doi.org/10.6073/pasta/75644add7e7f90c568bf5045264d359a (Accessed 2025-02-21).
+
+
 #Load Data
 Options: Abudefduf septemfasciatus <- dog fish tuna 104 observations
 Acanthurus olivaceus <- orange band surgeon fish 379 obs
@@ -35,4 +39,4 @@ ggplot(fishies, aes(x = Year, y = Count)) +
 ggplot(annual_survey, aes(x = Year, y = Count)) +
   geom_line(color = "blue")
 ```
-
+Link to data: https://portal.edirepository.org/nis/mapbrowse?packageid=knb-lter-mcr.6.62
