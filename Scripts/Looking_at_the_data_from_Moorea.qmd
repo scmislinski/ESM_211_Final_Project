@@ -8,6 +8,7 @@ editor: visual
 ```{r}
 library(tidyverse)
 library(here)
+library(dplyr)
 ```
 
 Citation: 
@@ -17,7 +18,7 @@ Moorea Coral Reef LTER and A. Brooks. 2023. MCR LTER: Coral Reef: Long-term Popu
 #Load Data
 Options: Abudefduf septemfasciatus <- dog fish tuna 104 observations
 Acanthurus olivaceus <- orange band surgeon fish 379 obs
-Naso lituratus <- unicornfish 1279 observations
+Naso lituratus <- orange spine unicornfish 1279 observations
 Acanthurus triostegus <- manini 466
 Carcharhinus melanopterus <- black tip reef shark 51 obs
 ```{r}
@@ -30,13 +31,49 @@ fishies <- annual_survey |> filter(Taxonomy == "Naso lituratus")
 
 
 ```{r}
-#just the orange spine unicorn fishies
-ggplot(fishies, aes(x = Year, y = Count)) +
-  geom_line(color = "blue")
+#just the orange spine unicorn fishies count per year
+unicorn_count_avg <- fishies |> 
+  group_by(Year) |>
+  summarise(Average_Count = mean(Count, na.rm = TRUE))
+
+unicorn_count_avg$Year <- as.numeric(unicorn_count_avg$Year)
+ggplot(unicorn_count_avg, aes(x = Year, y = Average_Count)) +
+  geom_line(color = "blue") + theme_classic()
 ```
+Unicorn fish biomass per year
+```{r}
+unicorn_biomas_avg <- fishies |> 
+  group_by(Year) |>
+  summarise(Average_Biomass = mean(Biomass, na.rm = TRUE))
+
+unicorn_biomas_avg$Year <- as.numeric(unicorn_biomas_avg$Year)
+
+ggplot(unicorn_biomas_avg, aes(x = Year, y = Average_Biomass)) +
+  geom_line(color = "blue") + theme_classic()
+
+```
+
 ```{r}
 #all fishies count
-ggplot(annual_survey, aes(x = Year, y = Count)) +
-  geom_line(color = "blue")
+all_count_avg <- fishies |> 
+  group_by(Year) |>
+  summarise(Average_Count = mean(Count, na.rm = TRUE))
+
+all_count_avg$Year <- as.numeric(all_count_avg$Year)
+
+ggplot(all_count_avg, aes(x = Year, y = Average_Count)) +
+  geom_line(color = "blue") + theme_classic()
 ```
 Link to data: https://portal.edirepository.org/nis/mapbrowse?packageid=knb-lter-mcr.6.62
+
+```{r}
+all_biomass_avg <- fishies |> 
+  group_by(Year) |>
+  summarise(Average_Biomass = mean(Biomass, na.rm = TRUE))
+
+all_biomass_avg$Year <- as.numeric(all_biomass_avg$Year)
+
+ggplot(all_biomass_avg, aes(x = Year, y = Average_Biomass)) +
+  geom_line(color = "blue") + theme_classic()
+```
+
