@@ -1,0 +1,136 @@
+---
+title: "Finalized_Code"
+author: "Samantha Mislinski and Miranda Scalzo"
+format: 
+  html: 
+    code-fold: show
+    toc: true
+    number-sections: true
+    embed-resources: true
+    message: false 
+    warning: false
+editor: visual
+theme: lumen
+execute:
+  echo: true
+  message: false
+  warning: false
+---
+
+# Plan for Project (replace with introduction afterwards)
+
+Use ARIMA model.
+
+Group the transects by site then divide by the area of the transect to get densities for both the count and biomass.
+
+Run the ARIMA models on count and biomass to compare
+
+Compare a heavily fished species and one that is not eaten. See if the decrease in counts and increase in biomass is just for the fished species or if it is across all fishies.
+
+# Libraries
+```{r}
+library(tidyverse)
+library(here)
+library(dplyr)
+library(forecast)
+```
+
+# Reading in and Cleaning the Data
+```{r}
+#creating the home ranges we have 6 sites in square kilometers
+site_1 <- 658.94
+site_2 <- 2.84
+site_3 <- 3.78 
+site_4 <- 4.26
+site_5 <- 8.62
+site_6 <- 5.72
+
+total_hr <- sum(site_1, site_2, site_3, site_4, site_5, site_6)
+
+```
+
+
+
+```{r}
+#read in the data, filter out the species we need, group by year and location. Mutate to get densities based on the study sites (homerange)
+
+annual_survey <- read_csv(here('Data','MCR_LTER_Annual_Fish_Survey_20230615.csv')) 
+#for the orange spine unicorn fish
+
+osu_df <- annual_survey |> 
+  filter(Taxonomy == "Naso lituratus") |> 
+  group_by(Year) |>  # Grouping by both Year and Site
+  summarise(
+    Avg_Count = mean(Count, na.rm = TRUE),
+    Avg_Biomass = mean(Biomass, na.rm = TRUE)
+  ) |> 
+  mutate(
+    count_density = Avg_Count / total_hr,  
+    biomass_density = Avg_Biomass / total_hr  
+  )
+############# for the spotted buffers
+
+ssp_df <- annual_survey |> 
+  filter(Taxonomy == "Canthigaster solandri") |> 
+  group_by(Year) |>  
+  summarise(
+    Avg_Count = mean(Count, na.rm = TRUE),
+    Avg_Biomass = mean(Biomass, na.rm = TRUE)
+  ) |> 
+  mutate(
+    count_density = Avg_Count / total_hr,  
+    biomass_density = Avg_Biomass / total_hr  
+  )  
+  
+osu_count_df <- osu_df |> select(Year, count_density)
+osu_biomass_df  <- osu_df |> select(Year, biomass_density)
+
+ssp_count_df <- ssp_df |> select(Year, count_density)
+ssp_biomass_df  <- ssp_df |> select(Year, biomass_density)
+
+#turn data into a time series file
+osu_count_ts<-ts(osu_count_df$count_density)
+osu_biomass_ts<-ts(osu_biomass_df$biomass_density)
+
+ssp_count_ts<-ts(osu_count_df$count_density)
+ssp_biomass_ts<-ts(osu_biomass_df$biomass_density)
+```
+
+
+# Running the Models
+For the orange spine unicorn fish count data
+```{r}
+#| label: fig1
+#| fig-cap: "This graph shows the forcasted population densitiy for orang sipine unicorn fish using ARIMA."
+osu_count_arima <- auto.arima(osu_count_ts, ic="bic") #Returns best ARIMA model according to either AIC, AICc or BIC value. The function conducts a
+# search over possible model within the order constraints provided.
+summary(osu_count_arima)
+
+#model forecast
+osu_count_forecasted_values <- forecast::forecast(osu_count_arima, h = 5) #forecast five more years
+osu_count_forecasted_values$mean #vector of expected values
+
+
+plot(osu_count_forecasted_values, 
+     main = "Population Density Forecast: Orange Spine Unicorn Fish", 
+     xlab = "Time", 
+     ylab = "Population Density", 
+     col = "blue",  
+     lwd = 2)  
+
+# Add actual data as points (using 'points()' function)
+points(time(osu_count_ts), osu_count_ts, col = "lightblue", pch = 16, cex = .8)  
+
+# Optionally, add a legend to differentiate between actual data and forecast
+legend("topright", 
+       legend = c("Observed", "Modeled"), 
+       col = c("lightblue", "blue"), 
+       lwd = 1, 
+       pch = c(16, NA),  
+       bty = "n")
+```
+
+
+
+
+

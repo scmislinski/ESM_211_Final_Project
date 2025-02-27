@@ -21,18 +21,20 @@ Acanthurus olivaceus <- orange band surgeon fish 379 obs
 Naso lituratus <- orange spine unicornfish 1279 observations
 Acanthurus triostegus <- manini 466
 Carcharhinus melanopterus <- black tip reef shark 51 obs
+Canthigaster solandri <- 743 Not heavily fished + cute
 ```{r}
 species_list <- read_csv(here('Data','MCR_LTER_Fish_Species_List_20230608.csv'))
 annual_survey <- read_csv(here('Data','MCR_LTER_Annual_Fish_Survey_20230615.csv'))
 
-fishies <- annual_survey |> filter(Taxonomy == "Naso lituratus")
+fishies_F <- annual_survey |> filter(Family == "Tetraodontidae")
+fishies_T <- annual_survey |> filter(Taxonomy == "Canthigaster valentini") 
 ```
 
 
 
 ```{r}
 #just the orange spine unicorn fishies count per year
-unicorn_count_avg <- fishies |> 
+unicorn_count_avg <- fishies_T |> 
   group_by(Year) |>
   summarise(Average_Count = mean(Count, na.rm = TRUE))
 
@@ -42,7 +44,7 @@ ggplot(unicorn_count_avg, aes(x = Year, y = Average_Count)) +
 ```
 Unicorn fish biomass per year
 ```{r}
-unicorn_biomas_avg <- fishies |> 
+unicorn_biomas_avg <- fishies_T |> 
   group_by(Year) |>
   summarise(Average_Biomass = mean(Biomass, na.rm = TRUE))
 
@@ -55,7 +57,7 @@ ggplot(unicorn_biomas_avg, aes(x = Year, y = Average_Biomass)) +
 
 ```{r}
 #all fishies count
-all_count_avg <- fishies |> 
+all_count_avg <- annual_survey |> 
   group_by(Year) |>
   summarise(Average_Count = mean(Count, na.rm = TRUE))
 
@@ -67,7 +69,7 @@ ggplot(all_count_avg, aes(x = Year, y = Average_Count)) +
 Link to data: https://portal.edirepository.org/nis/mapbrowse?packageid=knb-lter-mcr.6.62
 
 ```{r}
-all_biomass_avg <- fishies |> 
+all_biomass_avg <- annual_survey |> 
   group_by(Year) |>
   summarise(Average_Biomass = mean(Biomass, na.rm = TRUE))
 
