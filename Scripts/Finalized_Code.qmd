@@ -68,7 +68,7 @@ osu_df <- annual_survey |>
     count_density = Avg_Count / total_hr,  
     biomass_density = Avg_Biomass / total_hr  
   )
-############# for the spotted buffers
+############# for the spotted puffers
 
 ssp_df <- annual_survey |> 
   filter(Taxonomy == "Canthigaster solandri") |> 
@@ -101,7 +101,7 @@ ssp_biomass_ts<-ts(osu_biomass_df$biomass_density)
 For the orange spine unicorn fish count data
 ```{r}
 #| label: fig1
-#| fig-cap: "This graph shows the forcasted population densitiy for orang sipine unicorn fish using ARIMA."
+#| fig-cap: "This graph shows the forcasted population count densitiy for orang sipine unicorn fish using ARIMA."
 osu_count_arima <- auto.arima(osu_count_ts, ic="bic") #Returns best ARIMA model according to either AIC, AICc or BIC value. The function conducts a
 # search over possible model within the order constraints provided.
 summary(osu_count_arima)
@@ -129,7 +129,99 @@ legend("topright",
        pch = c(16, NA),  
        bty = "n")
 ```
+For the orange spine unicorn fish biomass data
+```{r}
+#| label: fig2
+#| fig-cap: "This graph shows the forcasted population biomass densitiy for orang sipine unicorn fish using ARIMA."
+osu_biomass_arima <- auto.arima(osu_biomass_ts, ic="bic") #Returns best ARIMA model according to either AIC, AICc or BIC value. The function conducts a
+# search over possible model within the order constraints provided.
+summary(osu_biomass_arima)
 
+#model forecast
+osu_biomass_forecasted_values <- forecast::forecast(osu_biomass_arima, h = 5) #forecast five more years
+osu_biomass_forecasted_values$mean #vector of expected values
+
+
+plot(osu_biomass_forecasted_values, 
+     main = "Population Density Forecast: Orange Spine Unicorn Fish", 
+     xlab = "Time", 
+     ylab = "Population Biomass Density", 
+     col = "blue",  
+     lwd = 2)  
+
+# Add actual data as points (using 'points()' function)
+points(time(osu_biomass_ts), osu_biomass_ts, col = "lightblue", pch = 16, cex = .8)  
+
+# Optionally, add a legend to differentiate between actual data and forecast
+legend("topright", 
+       legend = c("Observed", "Modeled"), 
+       col = c("lightblue", "blue"), 
+       lwd = 1, 
+       pch = c(16, NA),  
+       bty = "n")
+```
+puffers count
+```{r}
+#| label: fig3
+#| fig-cap: "This graph shows the forcasted population count densitiy for puffers using ARIMA."
+ssp_count_arima <- auto.arima(ssp_count_ts, ic="bic") #Returns best ARIMA model according to either AIC, AICc or BIC value. The function conducts a
+# search over possible model within the order constraints provided.
+summary(ssp_count_arima)
+
+#model forecast
+ssp_count_forecasted_values <- forecast::forecast(ssp_count_arima, h = 5) #forecast five more years
+ssp_count_forecasted_values$mean #vector of expected values
+
+
+plot(ssp_count_forecasted_values, 
+     main = "Population Density Forecast: Spotted Puffer Fish", 
+     xlab = "Time", 
+     ylab = "Population Density", 
+     col = "blue",  
+     lwd = 2)  
+
+# Add actual data as points (using 'points()' function)
+points(time(ssp_count_ts), ssp_count_ts, col = "lightblue", pch = 16, cex = .8)  
+
+# Optionally, add a legend to differentiate between actual data and forecast
+legend("topright", 
+       legend = c("Observed", "Modeled"), 
+       col = c("lightblue", "blue"), 
+       lwd = 1, 
+       pch = c(16, NA),  
+       bty = "n")
+```
+ssp biomass 
+```{r}
+#| label: fig4
+#| fig-cap: "This graph shows the forcasted population biomass densitiy for puffers using ARIMA."
+ssp_biomass_arima <- auto.arima(ssp_biomass_ts, ic="bic") #Returns best ARIMA model according to either AIC, AICc or BIC value. The function conducts a
+# search over possible model within the order constraints provided.
+summary(ssp_biomass_arima)
+
+#model forecast
+ssp_biomass_forecasted_values <- forecast::forecast(ssp_biomass_arima, h = 5) #forecast five more years
+ssp_biomass_forecasted_values$mean #vector of expected values
+
+
+plot(ssp_biomass_forecasted_values, 
+     main = "Population Biomass Density Forecast: Spotted Puffer Fish", 
+     xlab = "Time", 
+     ylab = "Population Density", 
+     col = "blue",  
+     lwd = 2)  
+
+# Add actual data as points (using 'points()' function)
+points(time(ssp_biomass_ts), ssp_biomass_ts, col = "lightblue", pch = 16, cex = .8)  
+
+# Optionally, add a legend to differentiate between actual data and forecast
+legend("topright", 
+       legend = c("Observed", "Modeled"), 
+       col = c("lightblue", "blue"), 
+       lwd = 1, 
+       pch = c(16, NA),  
+       bty = "n")
+```
 
 
 
