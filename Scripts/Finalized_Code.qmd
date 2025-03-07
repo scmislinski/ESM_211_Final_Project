@@ -28,6 +28,7 @@ Run the ARIMA models on count and biomass to compare
 Compare a heavily fished species and one that is not eaten. See if the decrease in counts and increase in biomass is just for the fished species or if it is across all fishies.
 
 # Libraries
+
 ```{r}
 library(tidyverse)
 library(here)
@@ -36,6 +37,7 @@ library(forecast)
 ```
 
 # Reading in and Cleaning the Data
+
 ```{r}
 #creating the home ranges we have 6 sites in square kilometers
 site_1 <- 658.94
@@ -48,8 +50,6 @@ site_6 <- 5.72
 total_hr <- sum(site_1, site_2, site_3, site_4, site_5, site_6)
 
 ```
-
-
 
 ```{r}
 #read in the data, filter out the species we need, group by year and location. Mutate to get densities based on the study sites (homerange)
@@ -89,16 +89,19 @@ ssp_count_df <- ssp_df |> select(Year, count_density)
 ssp_biomass_df  <- ssp_df |> select(Year, biomass_density)
 
 #turn data into a time series file
-osu_count_ts<-ts(osu_count_df$count_density)
-osu_biomass_ts<-ts(osu_biomass_df$biomass_density)
+osu_count_ts<-ts(osu_count_df$count_density, start = min(osu_count_df$Year), frequency = 1)
+osu_biomass_ts<-ts(osu_biomass_df$biomass_density, start = min(osu_biomass_df$Year), frequency = 1)
 
-ssp_count_ts<-ts(osu_count_df$count_density)
-ssp_biomass_ts<-ts(osu_biomass_df$biomass_density)
+ssp_count_ts<-ts(ssp_count_df$count_density, start = min(ssp_count_df$Year), frequency = 1)
+ssp_biomass_ts<-ts(ssp_biomass_df$biomass_density, start = min(ssp_biomass_df$Year), frequency = 1)
+
+
 ```
 
-
 # Running the Models
+
 For the orange spine unicorn fish count data
+
 ```{r}
 #| label: fig1
 #| fig-cap: "This graph shows the forcasted population count densitiy for orang sipine unicorn fish using ARIMA."
@@ -129,7 +132,9 @@ legend("topright",
        pch = c(16, NA),  
        bty = "n")
 ```
+
 For the orange spine unicorn fish biomass data
+
 ```{r}
 #| label: fig2
 #| fig-cap: "This graph shows the forcasted population biomass densitiy for orang sipine unicorn fish using ARIMA."
@@ -160,7 +165,9 @@ legend("topright",
        pch = c(16, NA),  
        bty = "n")
 ```
+
 puffers count
+
 ```{r}
 #| label: fig3
 #| fig-cap: "This graph shows the forcasted population count densitiy for puffers using ARIMA."
@@ -191,7 +198,9 @@ legend("topright",
        pch = c(16, NA),  
        bty = "n")
 ```
-ssp biomass 
+
+ssp biomass
+
 ```{r}
 #| label: fig4
 #| fig-cap: "This graph shows the forcasted population biomass densitiy for puffers using ARIMA."
@@ -222,7 +231,3 @@ legend("topright",
        pch = c(16, NA),  
        bty = "n")
 ```
-
-
-
-

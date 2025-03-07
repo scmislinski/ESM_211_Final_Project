@@ -1,0 +1,326 @@
+---
+title: "Finalized_Code"
+author: "Samantha Mislinski and Miranda Scalzo"
+format: 
+  html: 
+    code-fold: show
+    toc: true
+    number-sections: true
+    embed-resources: true
+    message: false 
+    warning: false
+editor: visual
+theme: lumen
+execute:
+  echo: true
+  message: false
+  warning: false
+---
+
+# Introduction
+
+The data for this project comes from Moorea French Polynisea. LTER: Coral Reef: Long-term Population and Community Dynamics: Fishes, ongoing since 2005 ver 62. Environmental Data Initiative.
+
+For this project, we focused on two species, orange spine unicorn fish (*Naso lituratus*) and spotted sharpnose puffer (*Canthigaster solandri*). The orange spine unicorn fish is fished throughout it's Moorea range. The spotted sharpnose puffer fish is not fished in Moorea. We chose these species to see if there was a difference in the change in their population and biomass due to fishing pressure.
+
+We first plotted the yearly counts and average biomass across the time series for these two species. We noticed that the average counts for the orange spine unicorn decreased throughout time and the biomass increased. The count and biomass did not appear to change for the spotted sharpnose puffer fish. This difference in the two species, may be due to fishing pressure, or more specifically a new regulation on the size. The larger the fish, the more and healthier the offspring. If there was a size limit to leave the larger fish, this pattern of counts decreasing but biomass increasing would make sense. We wanted to understand what would the future population look like for these to species.
+
+We used an ARIMA model to analyze the data and predict what will happen to the fish populations over the next five years. To prep the data, the average counts and biomass was determined for each year. The total area of the study area was calculated and then used to get the densities of the average counts and biomass. The ARIMA model works best on densities, so this is why we did this.
+
+# Libraries
+
+```{r}
+library(tidyverse)
+library(here)
+library(dplyr)
+library(forecast)
+```
+
+# Reading in and Cleaning the Data
+
+```{r}
+#creating the home ranges we have 6 sites in square kilometers
+site_1 <- 658.94
+site_2 <- 2.84
+site_3 <- 3.78 
+site_4 <- 4.26
+site_5 <- 8.62
+site_6 <- 5.72
+
+total_hr <- sum(site_1, site_2, site_3, site_4, site_5, site_6)
+
+```
+
+```{r}
+#read in the data, filter out the species we need, group by year and location. Mutate to get densities based on the study sites (homerange)
+
+annual_survey <- read_csv(here('Data','MCR_LTER_Annual_Fish_Survey_20230615.csv')) 
+#for the orange spine unicorn fish
+
+osu_df <- annual_survey |> 
+  filter(Taxonomy == "Naso lituratus") |> 
+  group_by(Year) |>  # Grouping by both Year and Site
+  summarise(
+    Avg_Count = mean(Count, na.rm = TRUE),
+    Avg_Biomass = mean(Biomass, na.rm = TRUE)
+  ) |> 
+  mutate(
+    count_density = Avg_Count / total_hr,  
+    biomass_density = Avg_Biomass / total_hr  
+  )
+############# for the spotted puffers #################
+
+ssp_df <- annual_survey |> 
+  filter(Taxonomy == "Canthigaster solandri") |> 
+  group_by(Year) |>  
+  summarise(
+    Avg_Count = mean(Count, na.rm = TRUE),
+    Avg_Biomass = mean(Biomass, na.rm = TRUE)
+  ) |> 
+  mutate(
+    count_density = Avg_Count / total_hr,  
+    biomass_density = Avg_Biomass / total_hr  
+  )  
+  
+osu_count_df <- osu_df |> select(Year, count_density)
+osu_biomass_df  <- osu_df |> select(Year, biomass_density)
+
+ssp_count_df <- ssp_df |> select(Year, count_density)
+ssp_biomass_df  <- ssp_df |> select(Year, biomass_density)
+
+#turn data into a time series file
+##when creating a time series object, need to make sure to specify the correct start year and frequency 
+osu_count_ts<-ts(osu_count_df$count_density, start = min(osu_count_df$Year), frequency = 1)
+osu_biomass_ts<-ts(osu_biomass_df$biomass_density, start = min(osu_biomass_df$Year), frequency = 1)
+
+ssp_count_ts<-ts(ssp_count_df$count_density, start = min(ssp_count_df$Year), frequency = 1)
+ssp_biomass_ts<-ts(ssp_biomass_df$biomass_density, start = min(ssp_biomass_df$Year), frequency = 1)
+
+```
+
+# Running the AREMA Models
+
+## For the orange spine unicorn fish count data
+
+```{r}
+#| label: fig1
+#| fig-cap: "This graph shows the forcasted population count density for orange sipine unicorn fish using ARIMA."
+osu_count_arima <- auto.arima(osu_count_ts) #Returns best ARIMA model according to either AIC, AICc or BIC value. The function conducts a
+# search over possible model within the order constraints provided.##too out BIC just to see if it would choose same ARIMA model which it did 
+summary(osu_count_arima)
+
+##random walk model which the auto arima is choosing may not actually be the best model because it's just assuming that the best forecast for the future is the most recent observed value (hence the flat forecast line)
+##trying an Arima (1,1,1) model which uses past trends instead of just carrying the last observed value forward
+
+osu_count_arima_alt <- Arima(osu_count_ts, order = c(1,1,1))
+summary(osu_count_arima_alt)
+
+osu_count_forecasted_values_alt <- forecast::forecast(osu_count_arima_alt, h = 5)
+plot(osu_count_forecasted_values_alt)
+
+##compare model performance to check
+AIC(osu_count_arima_alt)  # ARIMA(1,1,1)
+AIC(osu_count_arima)  # ARIMA(0,1,0)
+
+checkresiduals(osu_count_arima_alt)
+##Residuals look reasonable: No strong autocorrelation, meaning it's capturing key patterns.
+##use this arima model instead
+
+##plot foreecast with observed data for OSU count 
+plot(osu_count_forecasted_values_alt,
+     main= "Population Count Density Forecast: Orange Spine Unicorn Fish",
+     xlab= "Time",
+     ylab= "Population Density",
+     col= "orange",
+     lwd= 2,
+     include=length(osu_count_ts))
+##add data points 
+
+points(time(osu_count_ts), osu_count_ts, col = "lightblue", pch = 16, cex = 0.8)
+
+# Manually add forecasted values as a separate line
+lines(time(osu_count_ts)[length(osu_count_ts)] + 1:5, 
+      osu_count_forecasted_values_alt$mean, 
+      col = "red", lwd = 2, lty = 2)
+
+##add a legend 
+legend("topright", 
+       legend = c("Observed", "Forecasted Mean"), 
+       col = c("orange", "red"), 
+       lwd = c(2, 2), 
+       pch = c(16, NA), 
+       lty = c(1, 2),
+       bty = "n")
+
+# Extract the standard deviation of forecasted count values
+forecast_sd_count <- osu_count_forecasted_values_alt$residuals
+
+# Print the standard deviation
+sd_forecast_count <- sd(forecast_sd_count, na.rm = TRUE)  # Remove NAs to avoid errors
+print(sd_forecast_count)
+
+
+
+
+
+
+```
+
+## For the orange spine unicorn fish biomass data
+
+```{r}
+#| label: fig2
+#| fig-cap: "This graph shows the forcasted population biomass densitiy for orang sipine unicorn fish using ARIMA."
+###New code for ARIMA model (1,1,1) 
+## run the arima model and forecast out 5 years 
+osu_biomass_arima_alt <- Arima(osu_biomass_ts, order = c(1,1,1))
+summary(osu_biomass_arima_alt)
+
+osu_biomass_forecasted_values_alt <- forecast::forecast(osu_biomass_arima_alt, h = 5)
+plot(osu_biomass_forecasted_values_alt)
+
+##plot foreecast with observed data for OSU biomass 
+plot(osu_biomass_forecasted_values_alt,
+     main= "Population Biomass Density Forecast: Orange Spine Unicorn Fish",
+     xlab= "Time",
+     ylab= "Population Biomass Density",
+     col= "orange",
+     lwd= 2,
+     include=length(osu_biomass_ts))
+
+##add observed biomass data points to graph 
+
+points(time(osu_biomass_ts), osu_biomass_ts, col = "lightblue", pch = 16, cex = 0.8)
+
+# Manually add forecasted values for biomass as a separate line
+lines(time(osu_biomass_ts)[length(osu_biomass_ts)] + 1:5, 
+      osu_biomass_forecasted_values_alt$mean, 
+      col = "red", lwd = 2, lty = 2)
+
+##add a legend 
+legend("topright", 
+       legend = c("Observed Biomass", "Forecasted Mean"), 
+       col = c("orange", "red"), 
+       lwd = c(2, 2), 
+       pch = c(16, NA), 
+       lty = c(1, 2),
+       bty = "n")
+
+# Extract the standard deviation of forecasted biomass values 
+forecast_sd_biomass <- osu_biomass_forecasted_values_alt$residuals
+
+# Print the standard deviation
+sd_forecast_biomass <- sd(forecast_sd_biomass, na.rm = TRUE)  # Remove NAs to avoid errors
+print(sd_forecast_biomass)
+
+```
+
+## For the Spotted Puffer Fish Count Density 
+
+```{r}
+#| label: fig3
+#| fig-cap: "This graph shows the forcasted population count densitiy for spotted puffers using ARIMA."
+
+##Code for ARIMA model (1,1,1) for modeling spotted puffer fish count 
+#### run the arima model and forecast out 5 years 
+ssp_count_arima_alt <- Arima(ssp_count_ts, order = c(1,1,1))
+summary(ssp_count_arima_alt)
+
+ssp_count_forecasted_values_alt <- forecast::forecast(ssp_count_arima_alt, h = 5)
+plot(ssp_count_forecasted_values_alt)
+
+
+##plot foreecast with observed data for SSP counts 
+plot(ssp_count_forecasted_values_alt,
+     main= "Population Count Density Forecast: Spotted Puffer Fish",
+     xlab= "Time",
+     ylab= "Population Count Density",
+     col= "blue",
+     lwd= 2,
+     include=length(ssp_count_ts))
+
+##add observed count data points to graph 
+
+points(time(ssp_count_ts), ssp_count_ts, col = "lightblue", pch = 16, cex = 0.8)
+
+# Manually add forecasted values for count as a separate line
+lines(time(ssp_count_ts)[length(ssp_count_ts)] + 1:5, 
+      ssp_count_forecasted_values_alt$mean, 
+      col = "red", lwd = 2, lty = 2)
+
+##add a legend 
+legend("topright", 
+       legend = c("Observed Counts", "Forecasted Mean"), 
+       col = c("blue", "red"), 
+       lwd = c(2, 2), 
+       pch = c(16, NA), 
+       lty = c(1, 2),
+       bty = "n")
+
+
+# Extract the standard deviation of forecasted count values 
+ssp_forecast_sd_count <- ssp_count_forecasted_values_alt$residuals
+
+# Print the standard deviation
+ssp_sd_forecast_count <- sd(ssp_forecast_sd_count, na.rm = TRUE)  # Remove NAs to avoid errors
+print(ssp_sd_forecast_count)
+
+```
+
+## For the Spotted Puffer Fish Biomass Density 
+
+```{r}
+#| label: fig4
+#| fig-cap: "This graph shows the forcasted population biomass densitiy for puffers using ARIMA."
+
+
+##Code for ARIMA model (1,1,1) for modeling spotted puffer fish biomass 
+#### run the arima model and forecast out 5 years/ Plot.  
+ssp_biomass_arima_alt <- Arima(ssp_biomass_ts, order = c(1,1,1))
+summary(ssp_biomass_arima_alt)
+
+ssp_biomass_forecasted_values_alt <- forecast::forecast(ssp_biomass_arima_alt, h = 5)
+plot(ssp_biomass_forecasted_values_alt)
+
+
+##plot foreecast with observed data for SSP biomass 
+plot(ssp_biomass_forecasted_values_alt,
+     main= "Population Biomass Density Forecast: Spotted Puffer Fish",
+     xlab= "Time",
+     ylab= "Population Biomass Density",
+     col= "blue",
+     lwd= 2,
+     include=length(ssp_biomass_ts))
+
+##add observed biomass data points to graph 
+
+points(time(ssp_biomass_ts), ssp_biomass_ts, col = "lightblue", pch = 16, cex = 0.8)
+
+# Manually add forecasted values for biomass as a separate line
+lines(time(ssp_biomass_ts)[length(ssp_biomass_ts)] + 1:5, 
+      ssp_biomass_forecasted_values_alt$mean, 
+      col = "red", lwd = 2, lty = 2)
+
+##add a legend 
+legend("topright", 
+       legend = c("Observed Values", "Forecasted Mean"), 
+       col = c("blue", "red"), 
+       lwd = c(2, 2), 
+       pch = c(16, NA), 
+       lty = c(1, 2),
+       bty = "n")
+
+
+
+
+# Extract the standard deviation of forecasted biomass values 
+ssp_forecast_sd_biomass <- ssp_biomass_forecasted_values_alt$residuals
+
+# Print the standard deviation
+ssp_sd_forecast_biomass <- sd(ssp_forecast_sd_biomass, na.rm = TRUE)  # Remove NAs to avoid errors
+print(ssp_sd_forecast_biomass)
+
+
+```
+
+# Findings and Conclusion 
