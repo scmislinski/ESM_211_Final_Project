@@ -13,35 +13,13 @@ Surveys are conducted between 0900 and 1600 hours (local time) during late July 
 
 This material is based upon work supported by the U.S. National Science Foundation under Grant No. OCE 22-24354 (and earlier awards) as well as a generous gift from the Gordon and Betty Moore Foundation. Research was completed under permits issued by the French Polynesian Government (Délégation à la Recherche) and the Haut-commissariat de la République en Polynésie Francaise (DTRT) (Protocole d'Accueil 2005-2023). This work represents a contribution of the Moorea Coral Reef (MCR) LTER Site.
 
-Column Variable Descriptions:
+Column Variable Descriptions: These were the variables we used for our analysis. There are more variables in the full data set.
 
 Year: The year in which the data was collected.
 
-Date: The date in which the data was collected in year, month, date format.
-
-Start: The time the transects were started in hour, minute, second format.
-
-End: The time the transects ended in hour, minute, second format.
-
-Location: The location of the transect. Each location has an LTER, a location on the reef and the swath number.
-
-Site: The LTER site number 
-
-Habitat: The type of reef (back reef, fringing reef etc)
-
-Transect: The transect number
-
-Swath: The swath number
-
 Taxonomy: The taxonomy of the fish
 
-Family: The family of the fish
-
 Count: The number of fish of the same species that was counted in the transect.
-
-Total_length: The total length of the fish
-
-Length_anomaly: ??
 
 Biomass: The biomass of the fish calcuated using the length of the fish and the fish species.
 
@@ -49,30 +27,20 @@ Comment: Any comments from the diver during the transect.
 
 Coarse_Trophic: The trophic catigory the fish are in (Producer, primary consumer ect).
 
-Fine_Trophic: The type of food the fish genually consumes (omivor, planktavor ect)
-
-Cloud_cover: The percent of cloud cover during the transect.
-
-Wind_velocity: The wind speed in ???
-
-Sea_state: How rough the water using the Beaufort Scale, with a 0 being completely flat and 12 being hurricane conditions.
-
-Swell: The swell height in m.
-
-Visibility: The water visibility. 
-
-Surge: The surge at the time of the survey (m).
-
-Diver: The initials of who did the transect
-
 Research Domain: 
 
 1.56: marine biology
 
 Keywords: Longterm-monitoring, biodiversity, abundance, counts, transects
 
-Methods:
+Our Methods:
+For this project, we focused on two species, orange spine unicorn fish (Naso lituratus) and spotted sharpnose puffer (Canthigaster solandri). The orange spine unicorn fish is fished throughout it's Moorea range. The spotted sharpnose puffer fish is not fished in Moorea. We chose these species to see if there was a difference in the change in their population and biomass due to fishing pressure.
 
+We first plotted the yearly counts and average biomass across the time series for these two species. We noticed that the average counts for the orange spine unicorn decreased throughout time and the biomass increased. The count and biomass did not appear to change for the spotted sharpnose puffer fish. This difference in the two species, may be due to fishing pressure, or more specifically a new regualtion on the size. The larger the fish, the more and healthier the offspring. If there was a size limit to leave the larger fish, this pattern of counts decreasing but biomass increasing would make sense. We wanted to understand what would the future population look like for these to species.
+
+We used an ARIMA model to analyze the data and predict what will happen to the fish populations over the next five years. To prep the data, the average counts and biomass was determined for each year. The total area of the study area was calculated and then used to get the densities of the average counts and biomass. The ARIMA model works best on densities, so this is why we did this.  
+
+Data Collection Methods:
 These data describe the species abundance and estimated size distributions (total body length to the 
         greatest precision possible) of fishes surveyed as part of MCR LTER's annual reef fish monitoring program. 
         This study began in 2005 and the dataset is updated annually. Data from the initial survey conducted in 2005 
@@ -111,11 +79,6 @@ This material is based upon work supported by the U.S. National Science Foundati
         République en Polynésie Francaise (DTRT) (Protocole d'Accueil 2005-2023). This work represents a contribution of 
         the Moorea Coral Reef (MCR) LTER Site.
 
-For this project, we focused on two species, orange spine unicorn fish (Naso lituratus) and spotted sharpnose puffer (Canthigaster solandri). The orange spine unicorn fish is fished throughout it's Moorea range. The spotted sharpnose puffer fish is not fished in Moorea. We chose these species to see if there was a difference in the change in their population and biomass due to fishing pressure.
-
-We first plotted the yearly counts and average biomass across the time series for these two species. We noticed that the average counts for the orange spine unicorn decreased throughout time and the biomass increased. The count and biomass did not appear to change for the spotted sharpnose puffer fish. This difference in the two species, may be due to fishing pressure, or more specifically a new regualtion on the size. The larger the fish, the more and healthier the offspring. If there was a size limit to leave the larger fish, this pattern of counts decreasing but biomass increasing would make sense. We wanted to understand what would the future population look like for these to species.
-
-We used an ARIMA model to analyze the data and predict what will happen to the fish populations over the next five years. To prep the data, the average counts and biomass was determined for each year. The total area of the study area was calculated and then used to get the densities of the average counts and biomass. The ARIMA model works best on densities, so this is why we did this.  
 
 Related Works: 
 
